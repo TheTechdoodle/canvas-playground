@@ -13,15 +13,20 @@
                 <v-btn color="info" :href="scriptData">Bookmarklet</v-btn>
             </v-col>
         </v-row>
+        <v-row justify="center">
+            <dark-switch/>
+        </v-row>
     </v-container>
 </template>
 
 <script>
     import {frameFetch} from '../frame/frameFetch';
     import {framePromise} from '../frame/framePromise';
+    import DarkSwitch from '../components/DarkSwitch';
 
     export default {
         name: 'Home',
+        components: {DarkSwitch},
         data: () => ({
             token: null
         }),
