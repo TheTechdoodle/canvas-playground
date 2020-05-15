@@ -13,25 +13,28 @@ window.iframe = iframe;
 
 window.addEventListener('message', (event) =>
 {
-    if(event.data.hasOwnProperty('frameFetchID'))
+    if(event.data.hasOwnProperty('framePromiseID'))
     {
-        fetch(...event.data.arguments).then(res => res.json()).then(data =>
+        if(event.data.name === 'fetch')
         {
-            iframe.contentWindow.postMessage({
-                frameFetchID: event.data.frameFetchID,
-                resolve: data
-            }, new URL(iframe.src).origin);
-        }).catch((...args) =>
-        {
-            iframe.contentWindow.postMessage({
-                frameFetchID: event.data.frameFetchID,
-                reject: JSON.parse(JSON.stringify(Array.from(args)))
-            }, new URL(iframe.src).origin);
-        });
+            fetch(...event.data.args).then(res => res.json()).then(data =>
+            {
+                iframe.contentWindow.postMessage({
+                    framePromiseID: event.data.framePromiseID,
+                    resolve: data
+                }, new URL(iframe.src).origin);
+            }).catch((...args) =>
+            {
+                iframe.contentWindow.postMessage({
+                    framePromiseID: event.data.framePromiseID,
+                    reject: JSON.parse(JSON.stringify(args))
+                }, new URL(iframe.src).origin);
+            });
+        }
     }
 }, false);
 
 iframe.onload = () =>
 {
-    iframe.contentWindow.postMessage({frameFetchReady: true}, new URL(iframe.src).origin);
+    iframe.contentWindow.postMessage({framePromiseReady: true}, new URL(iframe.src).origin);
 };

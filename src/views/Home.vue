@@ -16,6 +16,8 @@
 </template>
 
 <script>
+    import {frameFetch} from '../frame/frameFetch';
+
     export default {
         name: 'Home',
         data: () => ({
