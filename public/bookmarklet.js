@@ -123,17 +123,14 @@ window.addEventListener('message', (event) =>
 {
     if(event.data.hasOwnProperty('framePromiseID'))
     {
-        if(event.data.name === 'fetch')
+        switch(event.data.name)
         {
-            framePromiseWrap(fetch(...event.data.args).then(res => res.json()), event);
-        }
-        else if(event.data.name === 'tokens')
-        {
-            framePromiseWrap(getCanvasTokens(), event);
-        }
-        else if(event.data.name === 'tokenDetails')
-        {
-            framePromiseWrap(getCanvasTokenDetails(), event);
+            case 'fetch': framePromiseWrap(fetch(...event.data.args).then(res => res.json()), event); break;
+            case 'getTokens': framePromiseWrap(getCanvasTokens(), event); break;
+            case 'getTokenDetails': framePromiseWrap(getCanvasTokenDetails(), event); break;
+            case 'generateToken': framePromiseWrap(generateToken(...event.data.args), event); break;
+            case 'regenerateToken': framePromiseWrap(regenerateToken(...event.data.args), event); break;
+            case 'deleteToken': framePromiseWrap(deleteToken(...event.data.args), event); break;
         }
     }
 }, false);
