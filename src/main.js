@@ -5,6 +5,10 @@ import store from './store';
 import Vuetify from 'vuetify/lib';
 import localforage from 'localforage';
 
+localforage.config({
+    name: 'canvas-playground'
+});
+
 Vue.use(Vuetify);
 Vue.config.productionTip = false;
 

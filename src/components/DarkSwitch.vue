@@ -1,5 +1,5 @@
 <template>
-    <v-switch v-model="$vuetify.theme.dark" :append-icon="icon" hide-details label="Dark Mode" class="darkswitch"/>
+    <v-switch v-model="$vuetify.theme.dark" :append-icon="icon" hide-details label="Dark Mode"/>
 </template>
 
 <script>

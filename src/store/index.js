@@ -4,8 +4,25 @@ import Vuex from 'vuex';
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-    state: {},
-    mutations: {},
+    state: {
+        closeLoadingImmediately: false,
+        hostUrl: {},
+        currentUser: {}
+    },
+    mutations: {
+        setHostUrl(state, hostUrl)
+        {
+            state.hostUrl = hostUrl;
+        },
+        setCurrentUser(state, currentUser)
+        {
+            state.currentUser = currentUser;
+        },
+        setCloseLoadingImmediately(state, closeLoadingImmediately)
+        {
+            state.closeLoadingImmediately = closeLoadingImmediately;
+        }
+    },
     actions: {},
     modules: {}
 });
