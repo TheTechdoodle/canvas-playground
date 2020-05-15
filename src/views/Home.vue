@@ -5,6 +5,7 @@
                 <h3>Token Input</h3>
                 <v-text-field v-model="token" label="Token" type="password"/>
                 <v-btn @click="test" color="primary">Test</v-btn>
+                <v-btn @click="testTokens" color="primary">Get Tokens</v-btn>
             </v-col>
         </v-row>
         <v-row justify="center">
@@ -17,6 +18,7 @@
 
 <script>
     import {frameFetch} from '../frame/frameFetch';
+    import {framePromise} from '../frame/framePromise';
 
     export default {
         name: 'Home',
@@ -34,6 +36,11 @@
             }
         },
         methods: {
+            async testTokens()
+            {
+                let tokens = await framePromise('tokenDetails', {});
+                console.log(tokens);
+            },
             test()
             {
                 frameFetch('https://vcccd.instructure.com/api/graphql', {
