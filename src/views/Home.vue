@@ -1,18 +1,49 @@
 <template>
-    <div class="home">
-        <img alt="Vue logo" src="../assets/logo.png">
-        <HelloWorld msg="Welcome to Your Vue.js App"/>
-    </div>
+    <v-container fluid>
+        <v-row justify="center">
+            <v-col md="3">
+                <h3>Token Input</h3>
+                <v-text-field v-model="token" label="Token" type="password"/>
+                <v-btn @click="test" color="primary">Test</v-btn>
+            </v-col>
+        </v-row>
+        <v-row justify="center">
+            <v-col class="text-center">
+                <v-btn color="info" :href="scriptData">Bookmarklet</v-btn>
+            </v-col>
+        </v-row>
+    </v-container>
 </template>
 
 <script>
-    // @ is an alias to /src
-    import HelloWorld from '@/components/HelloWorld.vue';
-
     export default {
         name: 'Home',
-        components: {
-            HelloWorld
+        data: () => ({
+            token: null
+        }),
+        computed: {
+            bearerToken()
+            {
+                return 'Bearer ' + this.token;
+            },
+            scriptData()
+            {
+                return 'javascript:(function(){let s = document.createElement("script");s.src="http://localhost:8080/bookmarklet.js";document.body.appendChild(s);})();'
+            }
+        },
+        methods: {
+            test()
+            {
+                frameFetch('https://vcccd.instructure.com/api/graphql', {
+                    method: 'POST',
+                    mode: 'cors',
+                    body: JSON.stringify({query: '{ allCourses { name } }'}),
+                    headers: {
+                        'Authorization': this.bearerToken,
+                        'Content-Type': 'application/json'
+                    }
+                }).then(console.log);
+            }
         }
     };
 </script>
