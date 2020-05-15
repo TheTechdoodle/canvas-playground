@@ -50,6 +50,27 @@ async function getCanvasTokenDetails()
     return details;
 }
 
+// From https://stackoverflow.com/a/25490531
+function getCookieValue(a)
+{
+    var b = document.cookie.match('(^|[^;]+)\\s*' + a + '\\s*=\\s*([^;]+)');
+    return b ? b.pop() : '';
+}
+
+async function regenerateToken(tokenUrl)
+{
+    const formData = new URLSearchParams();
+    formData.append('access_token[regenerate]', '1');
+    formData.append('_method', 'PUT');
+    formData.append('authenticity_token', unescape(getCookieValue('_csrf_token')));
+    
+    return await fetch(tokenUrl, {
+        method: 'POST',
+        'Accept': 'application/json, application/json+canvas-string-ids',
+        body: formData
+    }).then(res => res.json());
+}
+
 window.addEventListener('message', (event) =>
 {
     if(event.data.hasOwnProperty('framePromiseID'))
