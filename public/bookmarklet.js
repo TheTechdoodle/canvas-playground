@@ -102,55 +102,38 @@ async function generateToken(url, purpose, expires)
     }).then(res => res.json());
 }
 
+function framePromiseWrap(promise, event)
+{
+    promise.then(data =>
+    {
+        iframe.contentWindow.postMessage({
+            framePromiseID: event.data.framePromiseID,
+            resolve: data
+        }, new URL(iframe.src).origin);
+    }).catch((...args) =>
+    {
+        iframe.contentWindow.postMessage({
+            framePromiseID: event.data.framePromiseID,
+            reject: JSON.parse(JSON.stringify(args))
+        }, new URL(iframe.src).origin);
+    });
+}
+
 window.addEventListener('message', (event) =>
 {
     if(event.data.hasOwnProperty('framePromiseID'))
     {
         if(event.data.name === 'fetch')
         {
-            fetch(...event.data.args).then(res => res.json()).then(data =>
-            {
-                iframe.contentWindow.postMessage({
-                    framePromiseID: event.data.framePromiseID,
-                    resolve: data
-                }, new URL(iframe.src).origin);
-            }).catch((...args) =>
-            {
-                iframe.contentWindow.postMessage({
-                    framePromiseID: event.data.framePromiseID,
-                    reject: JSON.parse(JSON.stringify(args))
-                }, new URL(iframe.src).origin);
-            });
+            framePromiseWrap(fetch(...event.data.args).then(res => res.json()), event);
         }
         else if(event.data.name === 'tokens')
         {
-            getCanvasTokens().then(data =>
-            {
-                iframe.contentWindow.postMessage({
-                    framePromiseID: event.data.framePromiseID,
-                    resolve: data
-                }, new URL(iframe.src).origin);
-            }).catch((data) => {
-                iframe.contentWindow.postMessage({
-                    framePromiseID: event.data.framePromiseID,
-                    resolve: JSON.parse(JSON.stringify(data))
-                }, new URL(iframe.src).origin);
-            });
+            framePromiseWrap(getCanvasTokens(), event);
         }
         else if(event.data.name === 'tokenDetails')
         {
-            getCanvasTokenDetails().then(data =>
-            {
-                iframe.contentWindow.postMessage({
-                    framePromiseID: event.data.framePromiseID,
-                    resolve: data
-                }, new URL(iframe.src).origin);
-            }).catch((data) => {
-                iframe.contentWindow.postMessage({
-                    framePromiseID: event.data.framePromiseID,
-                    resolve: JSON.parse(JSON.stringify(data))
-                }, new URL(iframe.src).origin);
-            });
+            framePromiseWrap(getCanvasTokenDetails(), event);
         }
     }
 }, false);
