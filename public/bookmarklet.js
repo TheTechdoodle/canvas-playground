@@ -102,20 +102,22 @@ async function generateToken(url, purpose, expires)
     }).then(res => res.json());
 }
 
+function framePromiseReturn(event, data, resolve)
+{
+    iframe.contentWindow.postMessage({
+        framePromiseID: event.data.framePromiseID,
+        [resolve ? 'resolve' : 'reject']: data
+    }, new URL(iframe.src).origin);
+}
+
 function framePromiseWrap(promise, event)
 {
     promise.then(data =>
     {
-        iframe.contentWindow.postMessage({
-            framePromiseID: event.data.framePromiseID,
-            resolve: data
-        }, new URL(iframe.src).origin);
+        framePromiseReturn(event, data, true);
     }).catch((...args) =>
     {
-        iframe.contentWindow.postMessage({
-            framePromiseID: event.data.framePromiseID,
-            reject: JSON.parse(JSON.stringify(args))
-        }, new URL(iframe.src).origin);
+        framePromiseReturn(event, JSON.parse(JSON.stringify(args)), false);
     });
 }
 
@@ -131,6 +133,7 @@ window.addEventListener('message', (event) =>
             case 'generateToken': framePromiseWrap(generateToken(...event.data.args), event); break;
             case 'regenerateToken': framePromiseWrap(regenerateToken(...event.data.args), event); break;
             case 'deleteToken': framePromiseWrap(deleteToken(...event.data.args), event); break;
+            case 'getUrl': framePromiseReturn(event, JSON.parse(JSON.stringify(window.location)), true); break;
         }
     }
 }, false);
