@@ -71,6 +71,37 @@ async function regenerateToken(tokenUrl)
     }).then(res => res.json());
 }
 
+async function deleteToken(tokenUrl)
+{
+    const formData = new URLSearchParams();
+    formData.append('_method', 'DELETE');
+    formData.append('authenticity_token', unescape(getCookieValue('_csrf_token')));
+    
+    return await fetch(tokenUrl, {
+        method: 'POST',
+        'Accept': 'application/json, application/json+canvas-string-ids',
+        body: formData
+    }).then(res => res.json());
+}
+
+async function generateToken(url, purpose, expires)
+{
+    const formData = new URLSearchParams();
+    formData.append('utf8', '');
+    formData.append('authenticity_token', unescape(getCookieValue('_csrf_token')));
+    formData.append('_method', 'post');
+    formData.append('purpose', purpose);
+    formData.append('access_token[purpose]', purpose);
+    formData.append('expires_at', expires);
+    formData.append('access_token[expires_at]', expires);
+    
+    return await fetch(url, {
+        method: 'POST',
+        'Accept': 'application/json, application/json+canvas-string-ids',
+        body: formData
+    }).then(res => res.json());
+}
+
 window.addEventListener('message', (event) =>
 {
     if(event.data.hasOwnProperty('framePromiseID'))
