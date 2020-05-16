@@ -7,13 +7,13 @@
                     app
             >
                 <v-list>
-                    <v-list-item link>
+                    <v-list-item link :to="{name: 'user-data'}">
                         <v-list-item-action>
                             <v-icon>mdi mdi-flask</v-icon>
                         </v-list-item-action>
                         <v-list-item-content>
                             <v-list-item-title>
-                                Experiments
+                                User Data
                             </v-list-item-title>
                         </v-list-item-content>
                     </v-list-item>
@@ -230,7 +230,7 @@
                 token = await this.getToken();
                 currentUser = await this.getUser(token);
             }
-            console.log(currentUser.data);
+            this.$store.commit('setToken', token);
             this.$store.commit('setCurrentUser', currentUser.data);
 
             this.loading = false;

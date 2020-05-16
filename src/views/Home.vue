@@ -1,11 +1,8 @@
 <template>
     <v-container fluid>
         <v-row justify="center">
-            <v-col md="3">
-                <h3>Token Input</h3>
-                <v-text-field v-model="token" label="Token" type="password"/>
-                <v-btn @click="test" color="primary">Test</v-btn>
-                <v-btn @click="testTokens" color="primary">Get Tokens</v-btn>
+            <v-col cols="3">
+                <course-selection/>
             </v-col>
         </v-row>
         <v-row justify="center">
@@ -19,9 +16,11 @@
 <script>
     import {frameFetch} from '../frame/frameFetch';
     import {framePromise} from '../frame/framePromise';
+    import CourseSelection from '../components/CourseSelection';
 
     export default {
         name: 'Home',
+        components: {CourseSelection},
         data: () => ({
             token: null
         }),

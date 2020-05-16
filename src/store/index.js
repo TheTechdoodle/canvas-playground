@@ -7,7 +7,8 @@ export default new Vuex.Store({
     state: {
         closeLoadingImmediately: false,
         hostUrl: {},
-        currentUser: {}
+        currentUser: {},
+        token: ''
     },
     mutations: {
         setHostUrl(state, hostUrl)
@@ -21,6 +22,10 @@ export default new Vuex.Store({
         setCloseLoadingImmediately(state, closeLoadingImmediately)
         {
             state.closeLoadingImmediately = closeLoadingImmediately;
+        },
+        setToken(state, token)
+        {
+            state.token = token;
         }
     },
     actions: {},
