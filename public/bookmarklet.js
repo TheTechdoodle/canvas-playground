@@ -134,6 +134,7 @@ window.addEventListener('message', (event) =>
             case 'regenerateToken': framePromiseWrap(regenerateToken(...event.data.args), event); break;
             case 'deleteToken': framePromiseWrap(deleteToken(...event.data.args), event); break;
             case 'getUrl': framePromiseReturn(event, JSON.parse(JSON.stringify(window.location)), true); break;
+            case 'reload': framePromiseReturn(event, {}, true); window.location.reload(); break;
         }
     }
 }, false);

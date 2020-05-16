@@ -1,41 +1,76 @@
 <template>
     <v-app>
         <template v-if="ready">
+            <v-navigation-drawer
+                    v-model="drawer"
+                    :clipped="$vuetify.breakpoint.lgAndUp"
+                    app
+            >
+                <v-list>
+                    <v-list-item link>
+                        <v-list-item-action>
+                            <v-icon>mdi mdi-flask</v-icon>
+                        </v-list-item-action>
+                        <v-list-item-content>
+                            <v-list-item-title>
+                                Experiments
+                            </v-list-item-title>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-navigation-drawer>
+
             <v-app-bar
                     app
+                    :clipped-left="$vuetify.breakpoint.lgAndUp"
                     color="primary"
-                    dark
             >
-                <div class="d-flex align-center">
-                    <v-img
-                            alt="Vuetify Logo"
-                            class="shrink mr-2"
-                            contain
-                            src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-                            transition="scale-transition"
-                            width="40"
-                    />
+                <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
 
-                    <v-img
-                            alt="Vuetify Name"
-                            class="shrink mt-1 hidden-sm-and-down"
-                            contain
-                            min-width="100"
-                            src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-                            width="100"
-                    />
+                <div class="d-flex align-center">
+                    <v-toolbar-title>
+                        Canvas Playground
+                    </v-toolbar-title>
                 </div>
 
                 <v-spacer></v-spacer>
 
-                <v-btn
-                        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-                        target="_blank"
-                        text
-                >
-                    <span class="mr-2">Latest Release</span>
-                    <v-icon>mdi-open-in-new</v-icon>
-                </v-btn>
+                <v-menu offset-y :close-on-content-click="false">
+                    <template v-slot:activator="{on}">
+                        <v-btn icon v-on="on">
+                            <v-avatar>
+                                <img :src="avatar" alt="Profile Picture"/>
+                            </v-avatar>
+                        </v-btn>
+                    </template>
+
+                    <v-card>
+                        <v-container>
+                            <v-row justify="center">
+                                <v-avatar size="80">
+                                    <img :src="avatar" alt="Profile Picture"/>
+                                </v-avatar>
+                            </v-row>
+                            <v-row justify="center">
+                                <v-card-title>{{user.name}}</v-card-title>
+                            </v-row>
+                        </v-container>
+                        <v-list>
+                            <v-list-item>
+                                <dark-switch/>
+                            </v-list-item>
+                            <v-list-item>
+                                <close-loading-immediately-switch/>
+                            </v-list-item>
+                            <v-list-item @click="reload">
+                                <v-list-item-icon>
+                                    <v-icon>mdi mdi-exit-to-app</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>Exit</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-card>
+                </v-menu>
             </v-app-bar>
 
             <v-content>
@@ -87,8 +122,19 @@
         data: () => ({
             ready: false,
             loading: true,
-            prep: []
+            prep: [],
+            drawer: null
         }),
+        computed: {
+            user()
+            {
+                return this.$store.state.currentUser;
+            },
+            avatar()
+            {
+                return this.user['avatar_url'];
+            }
+        },
         methods: {
             addLoading(name)
             {
@@ -97,6 +143,10 @@
             endLoading()
             {
                 this.prep[0].status = 'complete';
+            },
+            reload()
+            {
+                framePromise('reload');
             },
             async getToken()
             {
@@ -180,7 +230,8 @@
                 token = await this.getToken();
                 currentUser = await this.getUser(token);
             }
-            this.$store.commit('setCurrentUser', currentUser);
+            console.log(currentUser.data);
+            this.$store.commit('setCurrentUser', currentUser.data);
 
             this.loading = false;
             if(this.$store.state.closeLoadingImmediately)
