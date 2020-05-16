@@ -108,7 +108,12 @@
                         'Content-Type': 'application/json'
                     }
                 }));
-                enrollments = enrollments.data['course']['enrollmentsConnection'];
+                if(enrollments.data.course === null)
+                {
+                    this.users = [];
+                    return;
+                }
+                enrollments = enrollments.data.course['enrollmentsConnection'];
 
                 if(enrollments === null)
                 {

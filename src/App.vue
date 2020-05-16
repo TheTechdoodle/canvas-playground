@@ -95,6 +95,7 @@
                                 <v-list-item-icon>
                                     <v-progress-circular v-if="prepItem.status === 'loading'" indeterminate/>
                                     <v-icon v-if="prepItem.status === 'complete'" color="success">mdi mdi-check</v-icon>
+                                    <v-icon v-if="prepItem.status === 'error'" color="error">mdi mdi-close</v-icon>
                                 </v-list-item-icon>
                                 <v-list-item-title>{{prepItem.name}}</v-list-item-title>
                             </v-list-item>
@@ -144,9 +145,9 @@
             {
                 this.prep.unshift({name, status: 'loading'});
             },
-            endLoading()
+            endLoading(error)
             {
-                this.prep[0].status = 'complete';
+                this.prep[0].status = error ? 'error' : 'complete';
             },
             reload()
             {
@@ -164,8 +165,10 @@
                     if(token.purpose === 'canvas-playground')
                     {
                         this.addLoading('Regenerating existing token');
-                        newToken = await framePromise('regenerateToken', token.tokenUrl)['visible_token'];
-                        this.endLoading();
+                        newToken = (await framePromise('regenerateToken', token.tokenUrl));
+                        console.log(newToken);
+                        newToken = newToken['visible_token'];
+                        this.endLoading(newToken === null || newToken === undefined);
                     }
                 }
                 // If an existing token doesn't exist, generate a new one
@@ -174,11 +177,15 @@
                     this.addLoading('Generating new token');
                     newToken = await framePromise('generateToken',
                         this.$store.state.hostUrl.origin + '/profile/tokens/',
-                        'canvas-playground', '')['visible_token'];
-                    this.endLoading();
+                        'canvas-playground', '');
+                    console.log('New token data: ');
+                    console.log(newToken);
+                    newToken = newToken['visible_token'];
+                    this.endLoading(newToken === null || newToken === undefined);
                 }
 
                 this.addLoading('Saving token');
+                console.log(newToken);
                 await localforage.setItem('token', newToken);
                 this.endLoading();
 
@@ -205,7 +212,7 @@
                 }
                 catch(e)
                 {
-                    this.endLoading();
+                    this.endLoading(true);
                     return {tokenValid: false};
                 }
             }
@@ -224,6 +231,8 @@
             this.$store.commit('setHostUrl', await framePromise('getUrl'));
             this.endLoading();
 
+            console.log(token);
+
             if(token === null)
             {
                 token = await this.getToken();
@@ -232,6 +241,8 @@
             if(!currentUser.tokenValid)
             {
                 token = await this.getToken();
+                console.log('Newer token');
+                console.log(token);
                 currentUser = await this.getUser(token);
             }
             this.$store.commit('setToken', token);

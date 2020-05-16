@@ -1,7 +1,7 @@
 <template>
     <v-container>
         <v-row justify="center">
-            <v-col cols="3">
+            <v-col cols="12" md="5" sm="8">
                 <course-selection v-model="selectedCourse"/>
             </v-col>
         </v-row>
