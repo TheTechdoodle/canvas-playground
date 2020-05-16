@@ -15,7 +15,7 @@
             scriptData()
             {
                 return 'javascript:(function(){let s = document.createElement("script");s.src="' +
-                    window.location.origin + '/bookmarklet.js' +
+                    window.location.href.replace(window.location.hash, '') + 'bookmarklet.js' +
                     '";document.body.appendChild(s);})();';
             }
         }
