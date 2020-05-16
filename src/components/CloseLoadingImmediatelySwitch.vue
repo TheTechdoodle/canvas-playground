@@ -1,5 +1,5 @@
 <template>
-    <v-switch v-model="closeLoadingImmediately" hide-details label="Close loading immediately" class="mt-0"/>
+    <v-switch v-model="closeLoadingImmediately" hide-details label="Proceed immediately next time" class="mt-0"/>
 </template>
 
 <script>

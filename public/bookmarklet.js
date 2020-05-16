@@ -147,6 +147,7 @@
             }
         }, false);
     
+        document.title = 'Canvas Playground';
         document.body.innerHTML = '';
     
         var iframe = document.createElement('iframe');

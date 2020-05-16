@@ -1,4 +1,5 @@
-# canvas-playground
+# Canvas Playground
+Uses a bookmarklet to access the Canvas API cross-origin without a proxy server.
 
 ## Project setup
 ```
@@ -14,6 +15,3 @@ npm run serve
 ```
 npm run build
 ```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
