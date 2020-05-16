@@ -13,7 +13,10 @@
                 </p>
                 <h4>Instructions:</h4>
                 <ol>
-                    <li>Drag the button below to your bookmarks bar or right click it and click "Bookmark this link"</li>
+                    <li>
+                        Add the bookmarklet link (titled "Canvas Playground") to your bookmarks.
+                        <a href="https://mreidsma.github.io/bookmarklets/installing.html" target="_blank">Instructions</a>
+                    </li>
                     <li>When you're on a Canvas page and signed in, click the bookmark</li>
                 </ol>
             </v-col>

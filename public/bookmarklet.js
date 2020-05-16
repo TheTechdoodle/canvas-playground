@@ -161,8 +161,7 @@
         iframe.style.zIndex = '10000';
         iframe.style.top = '0';
         iframe.style.border = 'none';
-        let originURL = new URL(document.currentScript.src);
-        iframe.src = originURL.origin + '/#/';
+        iframe.src = document.currentScript.src.replace('bookmarklet.js', '#/');
         document.body.appendChild(iframe);
         window.iframe = iframe;
     }

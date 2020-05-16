@@ -271,7 +271,7 @@
         },
         async created()
         {
-            waitForFramePromise(0).then(this.loadData).catch(() =>
+            waitForFramePromise(250).then(this.loadData).catch(() =>
             {
                 console.log('Timed out');
                 this.state = 'bookmarklet';
