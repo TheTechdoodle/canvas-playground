@@ -108,7 +108,6 @@
                         'Content-Type': 'application/json'
                     }
                 }));
-                console.log(enrollments);
                 enrollments = enrollments.data['course']['enrollmentsConnection'];
 
                 if(enrollments === null)
@@ -118,9 +117,7 @@
                 else
                 {
                     this.users = enrollments.nodes;
-                    console.log(this.users);
                 }
-
             }
         },
         async created()

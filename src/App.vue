@@ -29,7 +29,7 @@
 
                 <div class="d-flex align-center">
                     <v-toolbar-title>
-                        Canvas Playground
+                        Canvas Playground <span class="font-weight-light">v{{version}}</span>
                     </v-toolbar-title>
                 </div>
 
@@ -133,6 +133,10 @@
             avatar()
             {
                 return this.user['avatar_url'];
+            },
+            version()
+            {
+                return process.env.VUE_APP_VERSION;
             }
         },
         methods: {
