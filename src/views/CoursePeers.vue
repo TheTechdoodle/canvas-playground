@@ -20,7 +20,7 @@
         name: 'CoursePeers',
         components: {CoursePeerTable, CourseSelection},
         data: () => ({
-            selectedCourse: null
+            selectedCourse: ''
         })
     };
 </script>

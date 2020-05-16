@@ -3,7 +3,9 @@
                   :loading="loading"
                   :items="rows"
                   :items-per-page="-1"
-                  :footer-props="{'items-per-page-options': [10, 25, 50, -1]}">
+                  :footer-props="{'items-per-page-options': [10, 25, 50, -1]}"
+                  must-sort
+    >
         <template v-slot:item.avatar="{item}">
             <v-avatar class="ma-1">
                 <img v-if="item.avatar" :src="item.avatar" alt="Avatar"/>
@@ -11,10 +13,10 @@
             </v-avatar>
         </template>
         <template v-slot:item.created="{item}">
-            {{item.created.toLocaleString()}}
+            {{new Date(item.created).toLocaleString()}}
         </template>
         <template v-slot:item.activity="{item}">
-            {{item.activity.toLocaleString()}}
+            {{new Date(item.activity).toLocaleString()}}
         </template>
     </v-data-table>
 </template>
@@ -36,7 +38,7 @@
                 },
                 {text: 'Name', value: 'name'},
                 {text: 'Created', value: 'created'},
-                {text: 'Activity', value: 'activity'}
+                {text: 'Last Activity', value: 'activity'}
             ],
             options: {
                 itemsPerPage: 25
@@ -60,8 +62,8 @@
                 return this.users.map(user => ({
                     name: user.user.name,
                     avatar: user.user.avatarUrl,
-                    created: new Date(user.user.createdAt),
-                    activity: new Date(user.lastActivityAt)
+                    created: new Date(user.user.createdAt).getTime(),
+                    activity: new Date(user.lastActivityAt).getTime()
                 }));
             }
         },
