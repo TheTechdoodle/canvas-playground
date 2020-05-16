@@ -1,6 +1,6 @@
 <template>
     <v-app>
-        <template v-if="ready">
+        <template v-if="state === 'ready'">
             <v-navigation-drawer
                     v-model="drawer"
                     :clipped="$vuetify.breakpoint.lgAndUp"
@@ -77,16 +77,16 @@
                 <router-view/>
             </v-content>
         </template>
-        <template v-else>
+        <template v-if="state === 'loading' || state === 'loaded'">
             <v-content>
                 <v-container fluid class="mt-10">
-                    <v-row v-if="loading" justify="center" class="mb-5">
+                    <v-row v-if="state === 'loading'" justify="center" class="mb-5">
                         <v-progress-circular indeterminate/>
                     </v-row>
-                    <v-row v-if="!loading" justify="center" class="mb-1">
-                        <v-btn color="success" x-large @click="ready = true">Proceed</v-btn>
+                    <v-row v-if="state === 'loaded'" justify="center" class="mb-1">
+                        <v-btn color="success" x-large @click="state = 'ready'">Proceed</v-btn>
                     </v-row>
-                    <v-row v-if="!loading" justify="center" class="mb-10">
+                    <v-row v-if="state === 'loaded'" justify="center" class="mb-10">
                         <close-loading-immediately-switch/>
                     </v-row>
                     <v-row justify="center">
@@ -107,22 +107,34 @@
                 </v-container>
             </v-content>
         </template>
+        <template v-if="state === 'unknown'">
+            <v-container fluid class="mt-10">
+                <v-row justify="center">
+                    <v-progress-circular indeterminate/>
+                </v-row>
+            </v-container>
+        </template>
+        <template v-if="state === 'bookmarklet'">
+            <v-content>
+                <bookmarklet-explaination/>
+            </v-content>
+        </template>
     </v-app>
 </template>
 
 <script>
     import localforage from 'localforage';
     import {frameFetch} from './frame/frameFetch';
-    import {framePromise} from './frame/framePromise';
+    import {framePromise, isFramePromiseReady, waitForFramePromise} from './frame/framePromise';
     import DarkSwitch from './components/DarkSwitch';
     import CloseLoadingImmediatelySwitch from './components/CloseLoadingImmediatelySwitch';
+    import BookmarkletExplaination from './views/BookmarkletExplaination';
 
     export default {
         name: 'App',
-        components: {CloseLoadingImmediatelySwitch, DarkSwitch},
+        components: {BookmarkletExplaination, CloseLoadingImmediatelySwitch, DarkSwitch},
         data: () => ({
-            ready: false,
-            loading: true,
+            state: 'unknown',
             prep: [],
             drawer: null
         }),
@@ -215,44 +227,55 @@
                     this.endLoading(true);
                     return {tokenValid: false};
                 }
+            },
+            async loadData()
+            {
+                this.state = 'loading';
+
+                this.addLoading('Loading settings');
+                this.$store.commit('setCloseLoadingImmediately', await localforage.getItem('closeLoadingImmediately'));
+                this.endLoading();
+
+                this.addLoading('Loading token');
+                let token = await localforage.getItem('token');
+                this.endLoading();
+
+                this.addLoading('Loading url');
+                this.$store.commit('setHostUrl', await framePromise('getUrl'));
+                this.endLoading();
+
+                console.log(token);
+
+                if(token === null)
+                {
+                    token = await this.getToken();
+                }
+                let currentUser = await this.getUser(token);
+                if(!currentUser.tokenValid)
+                {
+                    token = await this.getToken();
+                    console.log('Newer token');
+                    console.log(token);
+                    currentUser = await this.getUser(token);
+                }
+                this.$store.commit('setToken', token);
+                this.$store.commit('setCurrentUser', currentUser.data);
+
+                this.state = 'loaded';
+                if(this.$store.state.closeLoadingImmediately)
+                {
+                    this.state = 'ready';
+                    this.state = 'ready';
+                }
             }
         },
         async created()
         {
-            this.addLoading('Loading settings');
-            this.$store.commit('setCloseLoadingImmediately', await localforage.getItem('closeLoadingImmediately'));
-            this.endLoading();
-
-            this.addLoading('Loading token');
-            let token = await localforage.getItem('token');
-            this.endLoading();
-
-            this.addLoading('Loading url');
-            this.$store.commit('setHostUrl', await framePromise('getUrl'));
-            this.endLoading();
-
-            console.log(token);
-
-            if(token === null)
+            waitForFramePromise(0).then(this.loadData).catch(() =>
             {
-                token = await this.getToken();
-            }
-            let currentUser = await this.getUser(token);
-            if(!currentUser.tokenValid)
-            {
-                token = await this.getToken();
-                console.log('Newer token');
-                console.log(token);
-                currentUser = await this.getUser(token);
-            }
-            this.$store.commit('setToken', token);
-            this.$store.commit('setCurrentUser', currentUser.data);
-
-            this.loading = false;
-            if(this.$store.state.closeLoadingImmediately)
-            {
-                this.ready = true;
-            }
+                console.log('Timed out');
+                this.state = 'bookmarklet';
+            });
         }
     };
 </script>
