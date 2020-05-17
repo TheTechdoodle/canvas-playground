@@ -166,11 +166,15 @@
         window.iframe = iframe;
     }
     
-    if(!window.location.origin.endsWith('instructure.com'))
+    let prepReady = true;
+    if(!window.location.origin.endsWith('instructure.com') && document.getElementById('instructure_ajax_error_box') === null)
     {
-        alert("This doesn't look like a Canvas page! (" + window.location.origin + ")\nMake sure you're on a Canvas page ending in \"instructure.com\".");
+        prepReady = confirm("This doesn't look like a Canvas page! (" +
+            window.location.origin +
+            ")\nMake sure you're on a Canvas page ending in \"instructure.com\".\nDo you wish to continue anyway?");
     }
-    else
+    
+    if(prepReady)
     {
         prep();
     }
