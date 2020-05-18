@@ -1,27 +1,41 @@
 <template>
-    <v-data-table :headers="headers"
-                  :loading="loading"
-                  :items="loading ? [] : users"
-                  :items-per-page="-1"
-                  :footer-props="{'items-per-page-options': [10, 25, 50, -1]}"
-                  must-sort
-    >
-        <template v-slot:item.avatar="{item}">
-            <v-avatar class="ma-1">
-                <img v-if="item.avatar" :src="item.avatar" alt="Avatar"/>
-                <template v-else>?</template>
-            </v-avatar>
-        </template>
-        <template v-slot:item.created="{item}">
-            {{new Date(item.userCreated).toLocaleString()}}
-        </template>
-        <template v-slot:item.enrolled="{item}">
-            {{new Date(item.enrolled).toLocaleString()}}
-        </template>
-        <template v-slot:item.activity="{item}">
-            {{item.activity === 0 ? 'Never' : new Date(item.activity).toLocaleString()}}
-        </template>
-    </v-data-table>
+    <v-card>
+        <v-card-title>
+            {{courseName}}
+            <v-spacer></v-spacer>
+            <v-text-field
+                    v-model="search"
+                    append-icon="mdi-magnify"
+                    label="Search"
+                    single-line
+                    hide-details
+            ></v-text-field>
+        </v-card-title>
+        <v-data-table :headers="headers"
+                      :loading="loading"
+                      :items="loading ? [] : users"
+                      :items-per-page="-1"
+                      :footer-props="{'items-per-page-options': [10, 25, 50, -1]}"
+                      :search="search"
+                      must-sort
+        >
+            <template v-slot:item.avatar="{item}">
+                <v-avatar class="ma-1">
+                    <img v-if="item.avatar" :src="item.avatar" alt="Avatar"/>
+                    <template v-else>?</template>
+                </v-avatar>
+            </template>
+            <template v-slot:item.created="{item}">
+                {{new Date(item.userCreated).toLocaleString()}}
+            </template>
+            <template v-slot:item.enrolled="{item}">
+                {{new Date(item.enrolled).toLocaleString()}}
+            </template>
+            <template v-slot:item.activity="{item}">
+                {{item.activity === 0 ? 'Never' : new Date(item.activity).toLocaleString()}}
+            </template>
+        </v-data-table>
+    </v-card>
 </template>
 
 <script>
@@ -33,6 +47,8 @@
         data: () => ({
             users: null,
             assignments: null,
+            courseName: '',
+            search: '',
             headers: [
                 {
                     text: '',
@@ -75,7 +91,7 @@
                 }
                 this.users = null;
 
-                let enrollments = (await frameFetch(this.graphqlEndpoint, {
+                let data = (await frameFetch(this.graphqlEndpoint, {
                     method: 'POST',
                     mode: 'cors',
                     body: JSON.stringify({query: `
@@ -110,20 +126,21 @@
                         'Authorization': 'Bearer ' + this.$store.state.token,
                         'Content-Type': 'application/json'
                     }
-                }));
-                if(enrollments.data.course === null)
+                })).data.course;
+                if(data === null)
                 {
                     this.users = [];
                     return;
                 }
+                this.courseName = data.name;
 
-                if(enrollments.data.course['enrollmentsConnection'] === null)
+                if(data['enrollmentsConnection'] === null)
                 {
                     this.users = [];
                 }
                 else
                 {
-                    this.users = enrollments.data.course['enrollmentsConnection'].nodes.map(user => ({
+                    this.users = data['enrollmentsConnection'].nodes.map(user => ({
                         name: user.user.name,
                         avatar: user.user.avatarUrl,
                         userCreated: new Date(user.user.createdAt).getTime(),
@@ -136,13 +153,13 @@
                     }));
                 }
 
-                if(enrollments.data.course['assignmentsConnection'] === null)
+                if(data['assignmentsConnection'] === null)
                 {
                     this.assignments = [];
                 }
                 else
                 {
-                    this.assignments = enrollments.data.course['assignmentsConnection'].nodes.map(assignment => ({
+                    this.assignments = data['assignmentsConnection'].nodes.map(assignment => ({
                         name: assignment.name,
                         id: assignment['_id'],
                         due: new Date(assignment.dueAt).getTime()
