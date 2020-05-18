@@ -37,6 +37,9 @@
             <template v-slot:item.activity="{item}">
                 {{item.activity === 0 ? 'Never' : new Date(item.activity).toLocaleString()}}
             </template>
+            <template v-slot:item.typeName="{item}">
+                <span :class="typeClasses(item.typeName)">{{item.typeName}}</span>
+            </template>
 
             <template v-slot:expanded-item="{headers, item}">
                 <td :colspan="headers.length">
@@ -47,6 +50,17 @@
                         <template v-else>
                             <v-row justify="center">
                                 <enrollment-table :user="item"/>
+                            </v-row>
+                            <v-row justify="center" class="mt-3">
+                                <v-card>
+                                    <v-card-title>Estimated Missed Assignments</v-card-title>
+                                    <v-card-subtitle>Based on due date</v-card-subtitle>
+                                    <ul>
+                                        <li v-for="assignment of overdueAssignments(item.activity)" :key="assignment.name">
+                                            {{assignment.name}}
+                                        </li>
+                                    </ul>
+                                </v-card>
                             </v-row>
                         </template>
                     </v-container>
@@ -105,6 +119,21 @@
             }
         },
         methods: {
+            overdueAssignments(time)
+            {
+                return this.assignments.filter(assignment => assignment.due > time);
+            },
+            typeClasses(type)
+            {
+                if(type === 'Teacher')
+                {
+                    return {
+                        'font-weight-bold': true,
+                        'blue--text': true
+                    };
+                }
+                return {};
+            },
             typeName(type)
             {
                 return ({
