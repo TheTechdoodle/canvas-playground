@@ -17,7 +17,10 @@
                       :items-per-page="-1"
                       :footer-props="{'items-per-page-options': [10, 25, 50, -1]}"
                       :search="search"
+                      @item-expanded="expanded"
+                      item-key="name"
                       must-sort
+                      show-expand
         >
             <template v-slot:item.avatar="{item}">
                 <v-avatar class="ma-1">
@@ -34,15 +37,32 @@
             <template v-slot:item.activity="{item}">
                 {{item.activity === 0 ? 'Never' : new Date(item.activity).toLocaleString()}}
             </template>
+
+            <template v-slot:expanded-item="{headers, item}">
+                <td :colspan="headers.length">
+                    <v-container>
+                        <v-row v-if="item.details === null" justify="center">
+                            <v-progress-circular indeterminate/>
+                        </v-row>
+                        <template v-else>
+                            <v-row justify="center">
+                                <enrollment-table :user="item"/>
+                            </v-row>
+                        </template>
+                    </v-container>
+                </td>
+            </template>
         </v-data-table>
     </v-card>
 </template>
 
 <script>
     import {frameFetch} from '../frame/frameFetch';
+    import EnrollmentTable from './EnrollmentTable';
 
     export default {
         name: 'CoursePeerTable',
+        components: {EnrollmentTable},
         props: ['courseId'],
         data: () => ({
             users: null,
@@ -54,12 +74,15 @@
                     text: '',
                     value: 'avatar',
                     align: 'start',
-                    sortable: false
+                    sortable: false,
+                    filterable: false
                 },
                 {text: 'Name', value: 'name'},
-                {text: 'Created', value: 'created'},
-                {text: 'Enrolled', value: 'enrolled'},
-                {text: 'Last Activity', value: 'activity'}
+                {text: 'Created', value: 'created', filterable: false},
+                {text: 'Enrolled', value: 'enrolled', filterable: false},
+                {text: 'Last Activity', value: 'activity', filterable: false},
+                {text: 'Type', value: 'typeName', filterable: false},
+                {text: '', value: 'data-table-expand'}
             ],
             options: {
                 itemsPerPage: 25
@@ -82,6 +105,13 @@
             }
         },
         methods: {
+            typeName(type)
+            {
+                return ({
+                    'StudentEnrollment': 'Student',
+                    'TeacherEnrollment': 'Teacher'
+                }[type]) || type;
+            },
             async loadData()
             {
                 if(!(this.courseId))
@@ -112,6 +142,7 @@
                           avatarUrl
                           createdAt
                           _id
+                          id
                         }
                         lastActivityAt
                         type
@@ -144,9 +175,10 @@
                         name: user.user.name,
                         avatar: user.user.avatarUrl,
                         userCreated: new Date(user.user.createdAt).getTime(),
-                        userID: user.user['_id'],
+                        userID: user.user['id'],
                         activity: new Date(user.lastActivityAt).getTime(),
                         type: user.type,
+                        typeName: this.typeName(user.type),
                         updated: new Date(user.updatedAt).getTime(),
                         enrolled: new Date(user.createdAt).getTime(),
                         details: null
@@ -166,9 +198,52 @@
                     }));
                 }
             },
+            expanded({item, value})
+            {
+                if(value === true && item.details === null)
+                {
+                    this.loadDetails(item.userID);
+                }
+            },
             async loadDetails(studentID)
             {
-
+                let data = (await frameFetch(this.graphqlEndpoint, {
+                    method: 'POST',
+                    mode: 'cors',
+                    body: JSON.stringify({query: `
+                query ($studentID: ID!) {
+                  node(id: $studentID) {
+                    ... on User {
+                      name
+                      enrollments {
+                        lastActivityAt
+                        createdAt
+                        course {
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+                `, variables: {studentID}}),
+                    headers: {
+                        'Authorization': 'Bearer ' + this.$store.state.token,
+                        'Content-Type': 'application/json'
+                    }
+                })).data.node;
+                for(let user of this.users)
+                {
+                    if(user.userID === studentID)
+                    {
+                        user.details = {
+                            enrollments: data.enrollments === null ? [] : data.enrollments.map(enrollment => ({
+                                activity: new Date(enrollment.lastActivityAt).getTime(),
+                                enrolled: new Date(enrollment.createdAt).getTime(),
+                                className: enrollment.course.name
+                            }))
+                        };
+                    }
+                }
             }
         },
         async created()
