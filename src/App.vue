@@ -178,7 +178,6 @@
                     {
                         this.addLoading('Regenerating existing token');
                         newToken = (await framePromise('regenerateToken', token.tokenUrl));
-                        console.log(newToken);
                         newToken = newToken['visible_token'];
                         this.endLoading(newToken === null || newToken === undefined);
                     }
@@ -190,14 +189,11 @@
                     newToken = await framePromise('generateToken',
                         this.$store.state.hostUrl.origin + '/profile/tokens/',
                         'canvas-playground', '');
-                    console.log('New token data: ');
-                    console.log(newToken);
                     newToken = newToken['visible_token'];
                     this.endLoading(newToken === null || newToken === undefined);
                 }
 
                 this.addLoading('Saving token');
-                console.log(newToken);
                 await localforage.setItem('token', newToken);
                 this.endLoading();
 
@@ -244,8 +240,6 @@
                 this.$store.commit('setHostUrl', await framePromise('getUrl'));
                 this.endLoading();
 
-                console.log(token);
-
                 if(token === null)
                 {
                     token = await this.getToken();
@@ -254,8 +248,6 @@
                 if(!currentUser.tokenValid)
                 {
                     token = await this.getToken();
-                    console.log('Newer token');
-                    console.log(token);
                     currentUser = await this.getUser(token);
                 }
                 this.$store.commit('setToken', token);
@@ -273,7 +265,6 @@
         {
             waitForFramePromise(250).then(this.loadData).catch(() =>
             {
-                console.log('Timed out');
                 this.state = 'bookmarklet';
             });
         }
