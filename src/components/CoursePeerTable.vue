@@ -14,7 +14,7 @@
         <v-data-table :headers="headers"
                       :loading="loading"
                       :items="loading ? [] : users"
-                      :items-per-page="-1"
+                      :items-per-page="50"
                       :footer-props="{'items-per-page-options': [10, 25, 50, -1]}"
                       :search="search"
                       @item-expanded="expanded"
